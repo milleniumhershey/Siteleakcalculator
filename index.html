@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Website Lead Leak Calculator | CareIntakeAI</title>
+<meta name="description" content="Find out how many families visit your senior care website and leave without calling. Free, private, runs in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚪</text></svg>">
+<style>
+:root{
+  --bg:#F3F6F4; --panel:#FFFFFF; --ink:#0A0C12; --muted:#56606B; --line:#D7DED9;
+  --green:#138A5B; --green-soft:#DDF1E7; --amber:#B86E00; --amber-soft:#FBEBD2; --dim:#C9D0CC;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A0C12; --panel:#12151E; --ink:#EEF2EF; --muted:#9AA4AE; --line:#232836;
+    --green:#1DB87A; --green-soft:#10301F; --amber:#F0A83C; --amber-soft:#35260E; --dim:#2A303D;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A0C12; --panel:#12151E; --ink:#EEF2EF; --muted:#9AA4AE; --line:#232836;
+  --green:#1DB87A; --green-soft:#10301F; --amber:#F0A83C; --amber-soft:#35260E; --dim:#2A303D;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 22px 56px}
+.brand{font-family:var(--serif);font-size:18px;color:var(--ink);text-decoration:none}
+.brand span{color:var(--green)}
+header.hero{padding:44px 0 36px;max-width:760px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,5.4vw,58px);line-height:1.08;letter-spacing:-.01em;margin:0 0 18px}
+.lede{font-size:19px;color:var(--muted);max-width:620px;margin:0}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:28px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px}
+fieldset{border:0;margin:0 0 26px;padding:0}
+fieldset:last-child{margin-bottom:0}
+legend{font-family:var(--serif);font-size:22px;padding:0;margin-bottom:14px;display:flex;gap:12px;align-items:baseline}
+legend .n{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--green);border:1.5px solid var(--green);border-radius:50%;width:26px;height:26px;display:inline-grid;place-items:center;flex:none;transform:translateY(-2px)}
+.field{margin-bottom:18px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-weight:600;font-size:16px;margin-bottom:4px}
+.hint{font-size:14px;color:var(--muted);margin:0 0 8px}
+.inrow{display:flex;align-items:center;gap:10px}
+.prefix{color:var(--muted);font-weight:600}
+input[type=number]{width:100%;max-width:220px;font:inherit;font-size:18px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+input[type=range]{flex:1;accent-color:var(--green);height:28px}
+output.pct{min-width:56px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+.caution{font-size:14px;background:var(--amber-soft);color:var(--ink);border-radius:10px;padding:10px 12px;margin-top:10px}
+
+/* Results */
+.results{position:sticky;top:calc(16px + env(safe-area-inset-top,0px))}
+@media (max-width:880px){.results{position:static}}
+.big{font-family:var(--serif);font-size:clamp(56px,9vw,84px);line-height:1;color:var(--amber);margin:4px 0 6px;font-variant-numeric:tabular-nums}
+.bigcap{font-size:17px;margin:0 0 20px}
+.dots{display:grid;grid-template-columns:repeat(20,1fr);gap:5px;margin:0 0 12px}
+.dot{aspect-ratio:1;border-radius:50%;background:var(--dim);transition:background-color .35s ease}
+.dot.r{background:var(--green)}
+.dot.s{background:var(--amber)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted);margin:0 0 22px;padding:0;list-style:none}
+.legend li::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:0;background:var(--c)}
+.rows{border-top:1px solid var(--line);margin:0 0 20px}
+.row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px}
+.row b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.row.total{font-size:18px}
+.row.total b{color:var(--green)}
+.note{font-size:14px;color:var(--muted);margin:0 0 18px}
+.cta{display:block;text-align:center;background:var(--green);color:#06140D;font-weight:700;font-size:17px;text-decoration:none;padding:15px 18px;border-radius:12px}
+.cta:hover{filter:brightness(1.07)}
+.ghost{display:block;width:100%;margin-top:10px;font:inherit;font-size:15px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:11px;cursor:pointer}
+.good{background:var(--green-soft);border-radius:10px;padding:12px 14px;font-size:15px}
+[hidden]{display:none!important}
+
+/* Where to find */
+section.find{margin-top:52px}
+h2{font-family:var(--serif);font-weight:400;font-size:30px;margin:0 0 8px}
+.find > p{color:var(--muted);margin:0 0 22px;max-width:640px}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.tool{border-top:2px solid var(--ink);padding-top:14px}
+.tool h3{font-size:17px;margin:0 0 6px}
+.tool p{font-size:15px;color:var(--muted);margin:0}
+footer{margin-top:52px;padding-top:22px;border-top:1px solid var(--line);font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+footer strong{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.dot{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="#">CareIntake<span>AI</span></a>
+
+  <header class="hero">
+    <h1>How many families leave your website without calling?</h1>
+    <p class="lede">Put in your own numbers. See how many families looked for care, left in silence, and what they were worth to your agency.</p>
+  </header>
+
+  <div class="grid">
+    <form class="panel" id="calc" onsubmit="return false" aria-label="Your agency numbers">
+      <fieldset>
+        <legend><span class="n">1</span>Your website</legend>
+        <div class="field">
+          <label for="visitors">Website visitors per month</label>
+          <p class="hint">From Google Analytics ("Users," last 28 days). See the guide below.</p>
+          <input id="visitors" type="number" min="0" step="1" value="400" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="inquiries">Families who called or filled a form from your site each month</label>
+          <p class="hint">Count care inquiries only. Leave out job applicants.</p>
+          <input id="inquiries" type="number" min="0" step="1" value="6" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="prospectPct">Visitors who are families looking for care</label>
+          <p class="hint">Many visitors are caregivers looking for jobs, current clients, or bots. Your best guess is fine.</p>
+          <div class="inrow">
+            <input id="prospectPct" type="range" min="5" max="80" step="1" value="30">
+            <output class="pct" for="prospectPct" id="prospectPctOut">30%</output>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="n">2</span>Your clients</legend>
+        <div class="field">
+          <label for="closePct">Inquiries that become clients</label>
+          <div class="inrow">
+            <input id="closePct" type="range" min="5" max="80" step="1" value="30">
+            <output class="pct" for="closePct" id="closePctOut">30%</output>
+          </div>
+        </div>
+        <div class="field">
+          <label for="bill">Average monthly bill per client</label>
+          <div class="inrow"><span class="prefix">$</span><input id="bill" type="number" min="0" step="50" value="2800" inputmode="numeric"></div>
+        </div>
+        <div class="field">
+          <label for="months">Average months a client stays</label>
+          <input id="months" type="number" min="1" step="1" value="10" inputmode="numeric">
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend><span class="n">3</span>What a 24/7 chat agent could catch</legend>
+        <div class="field">
+          <label for="catchPct">Silent families a chat agent turns into inquiries</label>
+          <div class="inrow">
+            <input id="catchPct" type="range" min="1" max="20" step="1" value="3">
+            <output class="pct" for="catchPct" id="catchPctOut">3%</output>
+          </div>
+          <p class="caution">Keep this number low. A chat agent won't win every family. It just gives the ones who visit at 10pm a way to reach you.</p>
+        </div>
+      </fieldset>
+    </form>
+
+    <aside class="panel results" aria-live="polite" aria-label="Your results">
+      <div class="big" id="silent">0</div>
+      <p class="bigcap">families left your site without reaching out this month.</p>
+
+      <div class="dots" id="dots" role="img" aria-label="Out of every 100 visitors"></div>
+      <ul class="legend">
+        <li style="--c:var(--green)" id="lgR">Reached out</li>
+        <li style="--c:var(--amber)" id="lgS">Left in silence</li>
+        <li style="--c:var(--dim)" id="lgO">Not looking for care</li>
+      </ul>
+
+      <div class="rows">
+        <div class="row"><span>Extra inquiries per month</span><b id="extraInq">0</b></div>
+        <div class="row"><span>Extra clients per month</span><b id="extraClients">0</b></div>
+        <div class="row"><span>One client is worth</span><b id="ltv">$0</b></div>
+        <div class="row"><span>Won back each month</span><b id="perMonth">$0</b></div>
+        <div class="row total"><span>Won back over 12 months</span><b id="perYear">$0</b></div>
+      </div>
+      <p class="note">"Won back" is the full value of the clients you could gain, over the months they stay with you.</p>
+
+      <div id="ctaBox">
+        <a class="cta" id="cta" href="https://calendly.com/guilletgreg" target="_blank" rel="noopener">Book a free 15-minute website check</a>
+      </div>
+      <p class="good" id="smallLeak" hidden>Your leak is small. Your website is already doing a good job turning visitors into calls.</p>
+      <button type="button" class="ghost" id="copyBtn">Copy my results</button>
+    </aside>
+  </div>
+
+  <section class="find" aria-labelledby="findH">
+    <h2 id="findH">Where to find your numbers</h2>
+    <p>These Google tools are free. If you have never set them up, that is normal. Most agency owners haven't.</p>
+    <div class="tools">
+      <div class="tool">
+        <h3>Google Analytics</h3>
+        <p>Shows every visitor to your website. Look at "Users" for the last 28 days. This is the best number for step 1.</p>
+      </div>
+      <div class="tool">
+        <h3>Google Business Profile</h3>
+        <p>Your Google Maps listing. Open Performance and look at "Website clicks." This only counts people who came from your listing, so it runs low.</p>
+      </div>
+      <div class="tool">
+        <h3>Google Search Console</h3>
+        <p>Shows clicks from Google Search. It may email you a monthly summary once it is set up. It also runs low, because it skips other traffic.</p>
+      </div>
+      <div class="tool">
+        <h3>Your phone log or CRM</h3>
+        <p>Count calls and web forms from families asking about care. Do not count caregiver job applicants.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span><strong>Private by design.</strong> Everything runs in your browser. Nothing you type is sent, saved, or tracked.</span>
+    <span>Built by CareIntakeAI for senior care agencies</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const money = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+  const one = n => (Math.round(n*10)/10).toLocaleString('en-US',{maximumFractionDigits:1});
+  const num = id => { const v = parseFloat($(id).value); return isFinite(v) && v > 0 ? v : 0; };
+
+  const dotsEl = $('dots');
+  const dots = [];
+  for (let i = 0; i < 100; i++){ const d = document.createElement('span'); d.className = 'dot'; dotsEl.appendChild(d); dots.push(d); }
+
+  let last = {};
+
+  function calc(){
+    ['prospectPct','closePct','catchPct'].forEach(id => { $(id+'Out').textContent = $(id).value + '%'; });
+
+    const visitors = num('visitors');
+    const inquiries = Math.min(num('inquiries'), visitors);
+    const prospectPct = num('prospectPct')/100;
+    const closePct = num('closePct')/100;
+    const catchPct = num('catchPct')/100;
+    const bill = num('bill');
+    const months = num('months');
+
+    const prospects = visitors * prospectPct;
+    const silent = Math.max(0, prospects - inquiries);
+    const extraInq = silent * catchPct;
+    const extraClients = extraInq * closePct;
+    const ltv = bill * months;
+    const perMonth = extraClients * ltv;
+    const perYear = perMonth * 12;
+
+    $('silent').textContent = Math.round(silent).toLocaleString('en-US');
+    $('extraInq').textContent = one(extraInq);
+    $('extraClients').textContent = one(extraClients);
+    $('ltv').textContent = money.format(ltv);
+    $('perMonth').textContent = money.format(perMonth);
+    $('perYear').textContent = money.format(perYear);
+
+    // Dots: out of every 100 visitors
+    let r = 0, s = 0;
+    if (visitors > 0){
+      r = Math.round(inquiries / visitors * 100);
+      if (inquiries > 0 && r === 0) r = 1;
+      s = Math.round(silent / visitors * 100);
+      if (silent >= 1 && s === 0) s = 1;
+      if (r + s > 100) s = 100 - r;
+    }
+    dots.forEach((d,i) => { d.className = 'dot' + (i < r ? ' r' : i < r + s ? ' s' : ''); });
+    $('lgR').textContent = r + ' reached out';
+    $('lgS').textContent = s + ' left in silence';
+    $('lgO').textContent = (100 - r - s) + ' not looking for care';
+    dotsEl.setAttribute('aria-label', 'Out of every 100 visitors: ' + r + ' reached out, ' + s + ' left in silence, ' + (100-r-s) + ' were not looking for care.');
+
+    const leak = perYear >= 5000;
+    $('ctaBox').hidden = !leak;
+    $('smallLeak').hidden = leak || visitors === 0;
+
+    last = {visitors, inquiries, silent, extraInq, extraClients, ltv, perMonth, perYear};
+  }
+
+  $('calc').addEventListener('input', calc);
+
+  $('copyBtn').addEventListener('click', async () => {
+    const t = [
+      'My website lead leak (CareIntakeAI calculator)',
+      'Visitors per month: ' + last.visitors,
+      'Families who reached out: ' + last.inquiries,
+      'Families who left in silence: ' + Math.round(last.silent),
+      'Extra clients per month with a chat agent: ' + one(last.extraClients),
+      'Won back over 12 months: ' + money.format(last.perYear)
+    ].join('\n');
+    const btn = $('copyBtn');
+    try { await navigator.clipboard.writeText(t); btn.textContent = 'Copied'; }
+    catch(e){ btn.textContent = 'Copy failed. Select the numbers by hand.'; }
+    setTimeout(() => { btn.textContent = 'Copy my results'; }, 2200);
+  });
+
+  calc();
+})();
+</script>
+</body>
+</html>
